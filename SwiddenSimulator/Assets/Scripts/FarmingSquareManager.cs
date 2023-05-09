@@ -5,56 +5,91 @@ using UnityEngine;
 
 public class FarmingSquareManager : MonoBehaviour
 {
-    enum State {
+    public enum State {
         HouseTile,
         Forest, 
         Grass,
         Farm,
-        Burned
+        Burned,
+        WorseYieldFarm
     }
 
-    State currState = State.Forest;
+    public State currState = State.Forest;
+    public SpriteRenderer mySprite;
+    public Sprite[] sprites;
+    private bool containsPlayer = false;
+    private Dictionary<State, int> stateMap = new Dictionary<State, int>();
 
     // Start is called before the first frame update
     void Start()
     {
-        print("Start " + this.name);
+        stateMap.Add(State.HouseTile, 0);
+        stateMap.Add(State.Forest, 1);
+        stateMap.Add(State.Grass, 2);
+        stateMap.Add(State.Farm, 3);
+        stateMap.Add(State.Burned, 4);
+        stateMap.Add(State.WorseYieldFarm, 5);
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-    }
-
-    private void OnTriggerStay2D(Collider2D other) {
-        if (other.tag == "Player")
-        {
-            // This is basically my update.
-            
-            if (Input.GetKey(KeyCode.F)) {
-                if (currState != State.Burned)
-                {
-                    print("Burn " + this.name);
-                }
+        if (containsPlayer)
+        {    
+            // Only burn if there is a forest.
+            if (Input.GetKey(KeyCode.F) && currState == State.Forest) 
+            {
+                print("Burn " + this.name);
                 currState = State.Burned;
+             //   mySprite.
             }
-            else if (Input.GetMouseButton(0)) {
-                if (currState != State.Farm)
-                {
-                    print("Till " + this.name);
-                }
+            
+            else if (Input.GetMouseButton(0) && currState == State.Burned) 
+            {
+                print("Till " + this.name);
                 currState = State.Farm;
             }
-            else if (Input.GetMouseButton(1)) {
-                if (currState != State.Grass)
-                {
-                    print("Destroy " + this.name);
-                }
+            else if (Input.GetMouseButton(0) && currState == State.Grass)
+            {
+                print("Till, but it's used up :( -- " + this.name);
+                currState = State.WorseYieldFarm;
+            }
+            else if (Input.GetMouseButton(1) && (currState == State.HouseTile 
+                                            || currState == State.WorseYieldFarm
+                                            || currState == State.Farm
+                                            || currState == State.Burned)) 
+            {
+                print("Destroy " + this.name);
                 currState = State.Grass;
             }
 
+            mySprite.sprite = sprites[stateMap[currState]];
+
+        }
+
+    }
+
+    public void changeState(State state) 
+    {
+        currState = state;
+        mySprite.sprite = sprites[stateMap[currState]];
+    }
+    
+    private void OnTriggerEnter2D(Collider2D other) 
+    {
+        if (other.tag == "Player")
+        {
+            containsPlayer = true;
         }
     }
+
+    private void OnTriggerExit2D(Collider2D other) {
+        if (other.tag == "Player")
+        {
+            containsPlayer = false;
+        }
+    }
+
 
 }
