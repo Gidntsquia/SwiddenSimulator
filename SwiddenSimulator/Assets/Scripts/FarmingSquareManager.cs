@@ -19,6 +19,7 @@ public class FarmingSquareManager : MonoBehaviour
     public Sprite[] sprites;
     private bool containsPlayer = false;
     private Dictionary<State, int> stateMap = new Dictionary<State, int>();
+    private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
@@ -30,6 +31,7 @@ public class FarmingSquareManager : MonoBehaviour
         stateMap.Add(State.Burned, 4);
         stateMap.Add(State.WorseYieldFarm, 5);
 
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
     // Update is called once per frame
@@ -41,7 +43,9 @@ public class FarmingSquareManager : MonoBehaviour
             if (Input.GetKey(KeyCode.F) && currState == State.Forest) 
             {
                 print("Burn " + this.name);
+                gameManager.applySwiddenTax();
                 currState = State.Burned;
+
              //   mySprite.
             }
             
