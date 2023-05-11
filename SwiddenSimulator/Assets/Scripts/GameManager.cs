@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
     private float farmYield = 3f;
     private float worseYield = 1f;
     private float foodEaten = 5f;
-    private float tax = 0.1f;
+    private float tax = 0f;
     private float swiddenTax = 0f;
 
     [SerializeField]
@@ -65,6 +65,10 @@ public class GameManager : MonoBehaviour
         switch (timeCount)
         {
             case 6:
+                eventLabel.SetText("A colonial government has taken charge!");
+                tax = 0.1f;
+                break;
+            case 7:
                 for (i = 0; i < 2; i++)
                 {
                     // First french colonial impact -- classify bottom left two forest
@@ -77,27 +81,27 @@ public class GameManager : MonoBehaviour
                 }
                 eventLabel.SetText("The colonial government marked some forest areas as \"protected\"!");
                 break;
-            case 8:
+            case 9:
                 eventLabel.SetText("The colonial government banned swidden! You will be punished if you do it.");
                 // Second french colonial impact -- punishment on swidden on swidden
-                swiddenTax = 2.0f;
+                swiddenTax = 5.0f;
                 break;
             
-            case 10:
+            case 11:
                 // Increase tax
 
                  eventLabel.SetText("The colonial government increased taxes!");
                 tax = 0.15f;
                 break;
 
-            case 15:
+            case 13:
                 eventLabel.SetText("War has broken loose! There is no one to regulate swidden, so it is allowed again.");
                 // Revolutionary / Japanese war breaks out, food seized
-                foodCount -= 10f;
+                foodCount -= 13f;
                 foodLabel.SetText("" + foodCount);
-                lossLabel.text = lossLabel.text + "-" + (10) + " lost in war\n";
-                foodLost += 10;
-                tax = 0.10f;
+                lossLabel.text = lossLabel.text + "-" + (13) + " lost in war\n";
+                foodLost += 13;
+                tax = 0f;
 
                 swiddenTax = 0.0f;
 
@@ -110,6 +114,7 @@ public class GameManager : MonoBehaviour
             
             case 20:
                 eventLabel.SetText("A new revolutionary government ousted the colonial government!");
+                tax = 0.1f;
                 break;
 
             case 21:
@@ -195,12 +200,15 @@ public class GameManager : MonoBehaviour
             prevStates[i] = square.currState;
             i++;
         }
-        float postTaxAmount = Mathf.Floor(foodCount * (1 - tax));
-        lossLabel.text = lossLabel.text + "-" + (foodCount - postTaxAmount) + " tax\n";
-        foodLost += foodCount - postTaxAmount;
-        foodCount = postTaxAmount;
-        
-        
+        if (tax > 0)
+        {
+            float postTaxAmount = Mathf.Floor(foodCount * (1 - tax));
+            lossLabel.text = lossLabel.text + "-" + (foodCount - postTaxAmount) + " tax\n";
+            foodLost += foodCount - postTaxAmount;
+            foodCount = postTaxAmount;
+        }
+
+
 
         foodCount -= foodEaten;
         lossLabel.text = lossLabel.text + "-" + (foodEaten) + " eaten\n";
@@ -274,6 +282,13 @@ public class GameManager : MonoBehaviour
         print("TAX!");
         foodCount -= swiddenTax;
         foodLabel.SetText("" + foodCount);
+        if (foodCount <= 0)
+        {
+            // YOU LOSE!
+            isDead = true;
+            sleepObjects.SetActive(false);
+            StartCoroutine("playDeathSequence");
+        }
     }
 
     // Start is called before the first frame update
